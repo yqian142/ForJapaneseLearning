@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node tests/app.test.mjs",
+    "check": "node --check src/app.js && node --check server.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

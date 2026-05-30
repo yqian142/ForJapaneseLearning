@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>日语视频学习器</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <nav class="topline" aria-label="应用导航">
+          <span class="brand">日语 YouTube 学习器</span>
+          <span class="badge">中文字幕界面 · 日文字幕增强</span>
+        </nav>
+        <div class="hero-grid">
+          <section>
+            <p class="eyebrow">YouTube + AI 转写 + 自动校正 + 注音 + 单词/语法学习器</p>
+            <h1>把日语视频变成可精读、可编辑、可复习的学习材料。</h1>
+            <p class="hero-copy">
+              粘贴 YouTube 链接即可在页面内观看视频；优先导入你信任的日语字幕文本，应用会解析时间轴、同步高亮，并为常见汉字自动添加假名注音。
+            </p>
+          </section>
+          <aside class="workflow-card" aria-label="学习流程">
+            <h2>推荐流程</h2>
+            <ol>
+              <li>粘贴视频链接并加载播放器</li>
+              <li>导入人工校对字幕或 SRT/VTT 文本</li>
+              <li>播放时跟读同步字幕和 furigana</li>
+              <li>记录单词、语法点，后续可接入 AI 转写</li>
+            </ol>
+          </aside>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel input-panel" aria-labelledby="video-input-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">第一步</p>
+              <h2 id="video-input-title">输入 YouTube 视频链接</h2>
+            </div>
+            <button id="loadDemo" class="ghost-button" type="button">载入示例</button>
+          </div>
+          <form id="videoForm" class="video-form">
+            <label for="youtubeUrl">YouTube 链接</label>
+            <div class="inline-control">
+              <input id="youtubeUrl" name="youtubeUrl" type="url" placeholder="例如：https://www.youtube.com/watch?v=..." autocomplete="off" />
+              <button type="submit">加载视频</button>
+            </div>
+            <p id="urlMessage" class="form-message" role="status">支持 youtube.com/watch、youtu.be、embed、shorts 链接。</p>
+          </form>
+        </section>
+
+        <section class="panel ai-panel" aria-labelledby="ai-transcribe-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">AI 转写</p>
+              <h2 id="ai-transcribe-title">AssemblyAI 日语转写</h2>
+            </div>
+            <span class="status-pill">需要 API Key</span>
+          </div>
+          <p class="helper-text">
+            在本地服务器设置 <code>ASSEMBLYAI_API_KEY</code> 后，可输入可公网访问的音频/视频文件直链生成日语字幕。注意：普通 YouTube 页面链接不是音频直链，建议先使用人工字幕，或后续接入 YouTube 音频提取服务。
+          </p>
+          <form id="transcribeForm" class="video-form">
+            <label for="mediaUrl">音频 / 视频文件 URL</label>
+            <div class="inline-control ai-control">
+              <input id="mediaUrl" name="mediaUrl" type="url" placeholder="例如：https://example.com/japanese-audio.mp3" autocomplete="off" />
+              <select id="languageCode" aria-label="转写语言">
+                <option value="ja" selected>日语 ja</option>
+                <option value="en">英语 en</option>
+                <option value="zh">中文 zh</option>
+              </select>
+              <button id="transcribeButton" type="submit">AI 转写并导入</button>
+            </div>
+            <p id="transcribeStatus" class="form-message" role="status">转写完成后会自动填入字幕编辑区，并立即添加注音。</p>
+          </form>
+        </section>
+
+        <section class="learning-grid" aria-label="视频与字幕学习区">
+          <article class="panel video-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">播放区</p>
+                <h2>视频播放</h2>
+              </div>
+              <span id="videoStatus" class="status-pill">等待链接</span>
+            </div>
+            <div class="video-frame" id="videoFrame">
+              <div class="empty-player">
+                <span>▶</span>
+                <p>输入 YouTube 链接后将在这里播放</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel subtitle-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">同步字幕区</p>
+                <h2>当前字幕</h2>
+              </div>
+              <button id="nextLine" class="ghost-button small" type="button">下一句</button>
+            </div>
+            <div id="currentSubtitle" class="current-subtitle" aria-live="polite">
+              <p class="placeholder">导入字幕后，这里会显示带注音的日语文本。</p>
+            </div>
+            <div class="subtitle-list" id="subtitleList" aria-label="字幕列表"></div>
+          </article>
+        </section>
+
+        <section class="editor-grid">
+          <article class="panel editor-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">字幕编辑</p>
+                <h2>粘贴 / 编辑可靠日语字幕</h2>
+              </div>
+              <button id="parseSubtitles" type="button">解析字幕并添加注音</button>
+            </div>
+            <p class="helper-text">
+              支持 SRT、WebVTT，或每行一句纯文本。优先使用人工校对字幕；AI 转写结果也建议先在这里修正后再学习。
+            </p>
+            <textarea id="subtitleInput" spellcheck="false" aria-label="字幕文本输入区"></textarea>
+          </article>
+
+          <aside class="panel study-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">学习器</p>
+                <h2>单词 / 语法笔记</h2>
+              </div>
+            </div>
+            <div class="note-box">
+              <h3>自动识别读音</h3>
+              <p>内置常见词读音词典与启发式规则，适合快速预习；不确定读音可在字幕区手动修改。</p>
+            </div>
+            <div class="note-box accent">
+              <h3>后续扩展接口</h3>
+              <ul>
+                <li>已支持通过 AssemblyAI 生成日语转写初稿</li>
+                <li>后续可使用 LLM 对字幕断句、纠错、补标点</li>
+                <li>导出 Anki 单词卡和语法复习列表</li>
+              </ul>
+            </div>
+            <label for="studyNotes">我的学习笔记</label>
+            <textarea id="studyNotes" placeholder="例：聞き取れない表达、N3 文法、想复习的单词……"></textarea>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
